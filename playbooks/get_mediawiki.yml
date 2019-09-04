@@ -1,0 +1,28 @@
+---
+
+- name: Download MediaWiki plus extensions from the tarball
+  hosts: debops_all_hosts
+  tasks:
+
+  - name: download mediawiki
+    become: yes
+    get_url:
+      url: https://releases.wikimedia.org/mediawiki/1.32/mediawiki-1.32.3.tar.gz
+      dest: /tmp/mediawiki-1.32.3.tar.gz
+  
+  - name: unzip mediawiki
+    unarchive:
+      src: /tmp/mediawiki-1.32.3.tar.gz
+      dest: /tmp
+      remote_src: yes
+  
+  - name: create code release directory
+    file:
+      path: /opt/mediawiki
+      state: directory
+      owner: root
+      group: www-data
+      mode: 0750
+      
+  - name: move mediawiki zip
+    shell: mv -u /tmp/mediawiki-1.32.3 /opt/mediawiki/1.32.3

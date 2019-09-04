@@ -1,0 +1,277 @@
+---
+# tasks file for qb3
+# Run this playbook by changing to the source directory and e.g.
+# ansible-playbook playbooks/deployment.yml --tags role::mariadb
+# See https://docs.debops.org/en/latest/user-guide/project-directories.html
+
+- name: Install memcached service
+  hosts: debops_memcached
+  become: True
+
+  roles:
+    - role: debops.memcached
+      tags: role::memcached
+
+# https://docs.debops.org/en/latest/ansible/roles/debops.nodejs/getting-started.html
+- name: Manage NodeJS environment
+  hosts: [ 'debops_service_nodejs', 'debops_nodejs' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ nodejs__apt_preferences__dependent_list }}'
+
+    - role: debops.nodejs
+      tags: [ 'role::nodejs', 'skip::nodejs' ]
+
+- name: Manage and configure the Apache HTTP Server
+  hosts: [ 'debops_service_apache' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apache/env
+      tags: [ 'role::apache', 'role::apache:env' ]
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ apache__ferm__dependent_rules }}'
+
+    - role: debops.apache
+      tags: [ 'role::apache', 'skip::apache' ]
+
+# https://docs.debops.org/en/latest/ansible/roles/debops.php/defaults-detailed.html#php-ref-packages
+- name: Install and manage PHP environment
+  hosts: [ 'debops_service_php' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::logrotate' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ php__apt_preferences__dependent_list }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+
+    - role: debops.php
+      tags: [ 'role::php', 'skip::php' ]
+
+# https://docs.debops.org/en/latest/ansible/roles/debops.mariadb_server/getting-started.html
+- name: Manage MariaDB server
+  hosts: [ 'debops_service_mariadb_server', 'debops_mariadb_server' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ mariadb_server__ferm__dependent_rules }}'
+
+    - role: debops.tcpwrappers
+      tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
+      tcpwrappers__dependent_allow:
+        - '{{ mariadb_server__tcpwrappers__dependent_allow }}'
+
+    - role: debops.mariadb_server
+      tags: [ 'role::mariadb_server', 'skip::mariadb_server' ]
+
+# The client (manage users and grants)
+# https://docs.debops.org/en/latest/ansible/roles/debops.mariadb/getting-started.html
+# Can be configured as a dependency for 'MediaWiki' role to create db and user etc.
+- name: Manage MariaDB client
+  hosts: [ 'debops_service_mariadb', 'debops_mariadb' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb', 'skip::mariadb' ]
+
+# https://docs.debops.org/en/latest/ansible/roles/debops.postfix/index.html
+# https://docs.debops.org/en/latest/ansible/roles/debops.postfix/guides.html
+- name: Manage Postfix SMTP service
+  hosts: [ 'debops_service_postfix' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.etc_aliases/env
+      tags: [ 'role::etc_aliases', 'role::secret', 'role::postfix' ]
+
+    - role: debops.postfix/env
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::postfix' ]
+      secret__directories:
+        - '{{ etc_aliases__secret__directories }}'
+        - '{{ postfix__secret__directories }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ postfix__ferm__dependent_rules }}'
+
+    - role: debops.etc_aliases
+      tags: [ 'role::etc_aliases', 'skip::etc_aliases' ]
+
+    - role: debops.postfix
+      tags: [ 'role::postfix', 'skip::postfix' ]
+
+# https://docs.debops.org/en/latest/ansible/roles/debops.ruby/getting-started.html#example-playbook
+- name: Manage Ruby environment
+  hosts: [ 'debops_service_ruby', 'debops_ruby' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ ruby__apt_preferences__dependent_list }}'
+
+    - role: debops.ruby
+      tags: [ 'role::ruby', 'skip::ruby' ]
+
+# https://docs.debops.org/en/latest/ansible/roles/debops.swapfile/defaults-detailed.html
+- name: Configure swap files
+  hosts: [ 'debops_service_swapfile' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.swapfile
+      tags: [ 'role::swapfile', 'skip::swapfile' ]
+
+
+# Unattended Upgrades is installed by common.yml
+# https://docs.debops.org/en/latest/ansible/roles/debops.unattended_upgrades/defaults.html
+# Tempted to blacklist MariaDB? The default origin is "security" for hosts with a FQDN
+# https://docs.debops.org/en/latest/ansible/roles/debops.unattended_upgrades/defaults-detailed.html
+
+# Etckeeper is installed by common.yml
+# https://docs.debops.org/en/latest/ansible/roles/debops.etckeeper/getting-started.html
+
+
+# https://docs.debops.org/en/latest/ansible/roles/debops.fail2ban/getting-started.html
+- name: Install fail2ban
+  hosts: debops_fail2ban
+  become: True
+
+  roles:
+    - role: debops.fail2ban
+      tags: [ 'role::fail2ban', 'skip::fail2ban' ]
+
+# https://docs.debops.org/en/latest/ansible/roles/debops.etc_aliases/getting-started.html#example-inventory
+- name: Manage /etc/aliases database
+  hosts: [ 'debops_service_etc_aliases' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+  
+  vars: 
+    - etc_aliases__admin_private_email: admin@equality-tech.com
+  roles:
+
+    - role: debops.etc_aliases/env
+      tags: [ 'role::etc_aliases', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::etc_aliases' ]
+      secret__directories:
+        - '{{ etc_aliases__secret__directories }}'
+
+    - role: debops.etc_aliases
+      tags: [ 'role::etc_aliases', 'skip::etc_aliases' ]
+
+# https://docs.debops.org/en/latest/ansible/roles/debops.elasticsearch/getting-started.html
+- name: Manage Elasticsearch cluster
+  hosts: [ 'debops_service_elasticsearch' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.elasticsearch/env
+      tags: [ 'role::elasticsearch', 'role::secret', 'role::elasticsearch:config' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::elasticsearch', 'role::elasticsearch:config' ]
+      secret__directories:
+        - '{{ elasticsearch__secret__directories }}'
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ java__apt_preferences__dependent_list }}'
+        - '{{ elastic_co__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ elasticsearch__etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ elasticsearch__ferm__dependent_rules }}'
+
+    - role: debops.java
+      tags: [ 'role::java', 'skip::java' ]
+
+    - role: debops.elastic_co
+      tags: [ 'role::elastic_co', 'skip::elastic_co' ]
+      elastic_co__dependent_packages:
+        - '{{ elasticsearch__elastic_co__dependent_packages }}'
+
+    - role: debops.elasticsearch
+      tags: [ 'role::elasticsearch', 'skip::elasticsearch' ]
