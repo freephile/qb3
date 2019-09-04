@@ -31,10 +31,10 @@ QualityBox Deployment Playbook
 ----------------
 
 Change to the source directory and
-ansible-playbook playbooks/deployment.yml
+`ansible-playbook playbooks/deployment.yml`
 
 then,
-ansible-playbook playbooks/get_mediawiki.yml
+`ansible-playbook playbooks/get_mediawiki.yml`
 
 License
 -------
