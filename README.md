@@ -27,19 +27,19 @@ Role Variables
 Specify nginx__servers to control hosts.
 
 
-Example Playbook
+QualityBox Deployment Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Change to the source directory and
+ansible-playbook playbooks/deployment.yml
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+then,
+ansible-playbook playbooks/get_mediawiki.yml
 
 License
 -------
 
-GNU Affero
+AGPL 3.0
 
 Author Information
 ------------------
