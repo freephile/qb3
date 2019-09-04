@@ -1,0 +1,52 @@
+---
+# defaults file for qb3
+
+apt_install__base_packages:
+  - 'lsb-release'
+  - 'make'
+  - 'git'
+  - 'curl'
+  - 'rsync'
+#  - 'bsdutils'
+#  - 'acl
+
+apt_install__shell_packages:
+  - 'ncurses-term'
+  - 'screen'
+  - 'tmux'
+  - 'less'
+  - 'file'
+  - 'psmisc'
+  - 'lsof'
+  - 'tree'
+  - 'htop'
+  - 'iftop'
+  - 'nload'
+  - 'nmon'
+#  - 'mtr-tiny'
+#  - 'mc'
+
+apt_install__editor_packages:
+  # The role also sets ``vim.basic`` as the default editor via
+  # the :envvar:`apt_install__default_alternatives` variable.
+  - 'vim'
+
+
+
+apt_install__packages: 
+  - byobu
+  - bzip2
+  - duplicity
+#    - gcc
+  - graphviz
+  - imagemagick
+  - libxml2-dev
+  - libxslt-dev
+  - libyaml-dev
+  - lua5.2
+  - memcached
+  - ncftp
+  - python-boto
+  - tree
+  - unzip
+  - uuid

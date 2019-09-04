@@ -1,0 +1,68 @@
+# This is an Ansible inventory file in INI format. You can define a list of
+# hosts and groups to be managed by this particular inventory.
+
+# Hosts listed under [debops_all_hosts] will have common DebOps plays
+# ran against them. It will include services such as iptables, DNS, Postfix,
+# sshd configuration and more.
+#
+# View the list here:
+# https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+#
+# You should check Getting Started guide for useful suggestions:
+# https://docs.debops.org/en/latest/debops-playbooks/guides/getting-started.html
+
+# Your host is eligible to be managed by DebOps' common playbook. If you want
+# that functionality and more, then uncomment your hostname below.
+
+[all:vars]
+ansible_python_interpreter='/usr/bin/env python3'
+elasticsearch__cluster_name='QualityBox Search'
+elasticsearch__user = elasticsearch
+elasticsearch__group = elasticsearch
+
+[debops_all_hosts]
+# greg-desk ansible_connection=local
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_memcached]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_service_nodejs]
+labs ansible_ssh_host=labs.qualitybox.us
+
+# [debops_service_apache]
+[debops_service_nginx]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_service_php]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_service_netbase]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_service_mariadb_server]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_service_mariadb]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_service_postfix]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_service_ruby]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_service_swapfile]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_fail2ban]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_service_etc_aliases]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_service_elasticsearch]
+labs ansible_ssh_host=labs.qualitybox.us
+
+[debops_service_elastic_co]
+labs ansible_ssh_host=labs.qualitybox.us

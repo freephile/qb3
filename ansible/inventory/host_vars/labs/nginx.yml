@@ -1,0 +1,14 @@
+---
+
+nginx__servers:
+
+  - name: '{{ ansible_fqdn }}'
+    type: 'php'
+    php_upstream: 'php5_www-data'
+#    root: '/srv/www/sites/{{ ansible_fqdn }}/public'
+    root: '/opt/mediawiki/mediawikifarm/www'
+
+  - name: 'wiki.ncigt.org'
+    type: 'php'
+    php_upstream: 'php5_www-data'
+    root: '/opt/mediawiki/mediawikifarm/www'    
